@@ -3,20 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>רון פון - ניהול הזמנות</title>
+    <title>רון פון - ניהול הזמנות ספקים</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; text-align: right; }
-        .card { background: white; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-width: 550px; margin: auto; margin-bottom: 15px; }
+        .card { background: white; padding: 18px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-width: 550px; margin: auto; margin-bottom: 15px; }
         h2, h3 { color: #1c1e21; text-align: center; margin-top: 5px; }
         input, select, button { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ccd0d5; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
         button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 8px; }
         button.success { background: #28a745; }
         button.whatsapp { background: #25D366; color: white; }
-        button.warning { background: #fd7e14; }
         button.danger { background: #dc3545; }
         button.secondary { background: #6c757d; }
-        button.info { background: #17a2b8; }
         .hidden { display: none !important; }
         .item-box { background: #f8f9fa; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid #e9ecef; }
         .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: bold; }
@@ -33,56 +31,55 @@
 </head>
 <body>
 
-    <!-- מסך כניסה למנהל -->
+    <!-- מסך כניסה למנהל החנות -->
     <div id="login-screen" class="card">
-        <h2>כניסה למערכת (רון פון)</h2>
+        <h2>כניסה למערכת - רון פון</h2>
         <input type="password" id="pin-input" placeholder="הכנס קוד סודי (2009)">
         <button onclick="checkLogin()">כניסה</button>
     </div>
 
     <!-- לוח בקרה ראשי -->
     <div id="dashboard-screen" class="card hidden">
-        <h2>לוח בקרה - הזמנות</h2>
+        <h2>לוח בקרה - הזמנות ספקים</h2>
         <div class="flex-row">
             <button class="success" onclick="openNewOrderScreen()">+ הזמנה חדשה</button>
             <button class="secondary" onclick="openSettingsScreen()">⚙ ספקים</button>
         </div>
-        <button id="notify-perm-btn" class="info" style="margin-top: 10px;" onclick="enableNativeNotifications()">🔔 אשר התראות למכשיר זה</button>
         <h3>הזמנות פעילות</h3>
         <div id="orders-list">טוען נתונים...</div>
     </div>
 
-    <!-- יצירת הזמנה חדשה -->
+    <!-- מסך יצירת הזמנה חדשה -->
     <div id="new-order-screen" class="card hidden">
-        <h2>יצירת הזמנה מרוכזת לספק</h2>
-        <label><strong>בחר ספק:</strong></label>
+        <h2>יצירת הזמנה לספק</h2>
+        <label><strong>בחר ספק ראשון:</strong></label>
         <select id="order-supplier"></select>
         
-        <h3 style="text-align: right; margin-top: 15px;">רשימת הפריטים להזמנה:</h3>
+        <h3 style="text-align: right; margin-top: 15px;">פריטים בהזמנה:</h3>
         <div id="checklist-items-container"></div>
 
-        <button type="button" class="secondary" onclick="addChecklistRow()">+ הוסף פריט נוסף לרשימה</button>
+        <button type="button" class="secondary" onclick="addChecklistRow()">+ הוסף פריט לרשימה</button>
         <button type="button" class="whatsapp" style="margin-top: 15px; font-size: 18px;" onclick="submitOrder()">💬 צור הזמנה ופתח בוואטסאפ לספק</button>
-        <button type="button" class="secondary" onclick="showScreen('dashboard-screen')">ביטול וחזרה</button>
+        <button type="button" class="secondary" onclick="showScreen('dashboard-screen')">חזרה ללוח הבקרה</button>
     </div>
 
     <!-- מסך ניהול ספקים -->
     <div id="settings-screen" class="card hidden">
-        <h2>רשימת ספקים</h2>
+        <h2>ניהול ספקים</h2>
         <h3>הוספת ספק חדש</h3>
         <input type="text" id="new-sup-name" placeholder="שם הספק">
-        <input type="tel" id="new-sup-phone" placeholder="מספר טלפון (לוואטסאפ)">
+        <input type="tel" id="new-sup-phone" placeholder="מספר טלפון (וואטסאפ)">
         <button class="success" onclick="addNewSupplier()">שמור ספק</button>
 
-        <h3>ספקים קיימים</h3>
+        <h3>רשימת ספקים קיימים</h3>
         <div id="suppliers-list">טוען ספקים...</div>
         <button class="secondary" style="margin-top:15px;" onclick="showScreen('dashboard-screen'); loadDashboardData();">חזרה ללוח הבקרה</button>
     </div>
 
-    <!-- דף ספק ייעודי -->
+    <!-- דף ייעודי לספק (נפתח דרך הקישור) -->
     <div id="supplier-screen" class="card hidden">
-        <h2 id="supplier-welcome">רון פון - עדכון הזמנה</h2>
-        <p id="supplier-instructions">נא לסמן זמינות לכל פריט ברשימה:</p>
+        <h2 id="supplier-welcome">רון פון - הזמנה מספק</h2>
+        <p id="supplier-instructions">סמן זמינות לכל פריט:</p>
         <div id="supplier-items-list">טוען נתונים...</div>
         <button id="supplier-save-all-btn" class="success" style="margin-top:15px; font-size:18px;" onclick="saveAllSupplierItems()">שלח עדכון לרון פון</button>
     </div>
@@ -91,6 +88,7 @@
         const SUPABASE_URL = 'https://cqacjdxqavklpmtdhyvp.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxYWNqZHhxYXZrbHBtdGRoeXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwNzkwMDIsImV4cCI6MjEwNzY1NTAwMn0.EUKe048q2k4Hx8cg1WeLY9FPA4iyk9ntAPJeDUPO-yo';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const NTFY_TOPIC = 'ronphone-moshiko';
 
         let allSuppliersCache = [];
         let rowCounter = 0;
@@ -106,41 +104,17 @@
             if (pin === '2009') {
                 showScreen('dashboard-screen');
                 loadDashboardData();
-                initRealtimeNotifications();
+                initRealtimeUpdates();
             } else {
                 alert('קוד שגוי!');
             }
         }
 
-        function enableNativeNotifications() {
-            if (!("Notification" in window)) {
-                alert("הדפדפן אינו תומך בהתראות.");
-                return;
-            }
-            Notification.requestPermission().then(function(permission) {
-                if (permission === "granted") {
-                    alert("ההתראות הופעלו בהצלחה!");
-                    document.getElementById('notify-perm-btn').style.display = 'none';
-                    new Notification("רון פון", { body: "ההתראות מחוברות ומוכנות!" });
-                } else {
-                    alert("הרשאת ההתראות לא אושרה.");
-                }
-            });
-        }
-
-        function sendAppNotification(title, bodyText) {
-            if (Notification.permission === "granted") {
-                new Notification(title, { body: bodyText });
-            }
-        }
-
-        function initRealtimeNotifications() {
+        function initRealtimeUpdates() {
             supabaseClient
                 .channel('realtime-orders')
-                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'order_items' }, function(payload) {
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'order_items' }, function() {
                     loadDashboardData();
-                    const statusText = payload.new.status === 'supplied' ? 'יש במלאי!' : (payload.new.status === 'none' ? 'אין במלאי' : 'עודכן');
-                    sendAppNotification("עדכון מספק - רון פון", payload.new.model + ": " + statusText);
                 })
                 .subscribe();
         }
@@ -261,7 +235,6 @@
             showScreen('dashboard-screen');
             loadDashboardData();
 
-            // פתיחת וואטסאפ ישירה
             const targetPhone = formatPhoneForWhatsapp(supplier.phone || '');
             window.location.href = 'https://wa.me/' + targetPhone + '?text=' + encodeURIComponent(message);
         }
@@ -293,8 +266,9 @@
                 const itemsHtml = o.order_items.map(function(i) {
                     let st = '<span class="badge badge-pending">ממתין לתשובה</span>';
                     let arrivalInfo = i.estimated_arrival ? (' (צפי: ' + i.estimated_arrival + ')') : '';
+                    let priceInfo = i.price ? (' | מחיר: ₪' + i.price) : '';
 
-                    if (i.status === 'supplied') st = '<span class="badge badge-supplied">יש במלאי' + arrivalInfo + '</span>';
+                    if (i.status === 'supplied') st = '<span class="badge badge-supplied">יש במלאי' + arrivalInfo + priceInfo + '</span>';
                     else if (i.status === 'none') st = '<span class="badge badge-none">אין במלאי</span>';
 
                     return '<div style="margin:8px 0; padding-bottom:6px; border-bottom:1px solid #eee;">' +
@@ -367,7 +341,6 @@
 
             loadDashboardData();
 
-            // פתיחת וואטסאפ ישירה
             const targetPhone = formatPhoneForWhatsapp(targetSup.phone || '');
             window.location.href = 'https://wa.me/' + targetPhone + '?text=' + encodeURIComponent(message);
         }
@@ -436,20 +409,37 @@
                         '<option value="none" ' + (item.status === 'none' ? 'selected' : '') + '>אין במלאי</option>' +
                         '<option value="pending" ' + (item.status === 'pending' ? 'selected' : '') + '>בבדיקה</option>' +
                     '</select>' +
+                    '<input type="number" id="sup_price_' + item.id + '" placeholder="מחיר לפריט (בש״ח)" value="' + (item.price || '') + '">' +
                     '<input type="text" id="sup_arrival_' + item.id + '" placeholder="צפי הגעה (למשל: היום ב-14:00)" value="' + (item.estimated_arrival || '') + '">' +
                 '</div>';
             }).join('');
         }
 
         async function saveAllSupplierItems() {
+            let summaryForAlert = '';
             for (const item of currentSupplierItems) {
                 const status = document.getElementById('sup_status_' + item.id).value;
+                const price = document.getElementById('sup_price_' + item.id).value.trim();
                 const arrival = document.getElementById('sup_arrival_' + item.id).value.trim();
+                
                 await supabaseClient.from('order_items').update({
                     status: status,
+                    price: price ? parseFloat(price) : null,
                     estimated_arrival: arrival
                 }).eq('id', item.id);
+
+                const statusHeb = status === 'supplied' ? 'יש במלאי' : (status === 'none' ? 'אין במלאי' : 'בבדיקה');
+                summaryForAlert += item.model + ': ' + statusHeb + (price ? ' (₪' + price + ')' : '') + (arrival ? ' [' + arrival + ']' : '') + '\n';
             }
+
+            // שליחת התראה ישירה ונקייה ל-ntfy
+            try {
+                await fetch('https://ntfy.sh/' + NTFY_TOPIC, {
+                    method: 'POST',
+                    body: 'רון פון - עדכון מספק:\n' + summaryForAlert
+                });
+            } catch(e) {}
+
             alert('העדכון נשלח לרון פון בהצלחה!');
         }
     </script>
